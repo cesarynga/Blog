@@ -1,13 +1,28 @@
 #coding:utf-8
-get '/users' do
-	content_type :json, :charset => 'utf-8'
-	User.all.to_json(:except => :password)
-end 
+# get '/users' do
+# 	content_type :json, :charset => 'utf-8'
+# 	User.all.to_json(:except => :password)
+# end 
 
-get '/users/:id' do
+# get '/users/:id' do
+# 	content_type :json, :charset => 'utf-8'
+# 	User.find(params[:id]).to_json(:except => :password)
+# end 
+
+post '/users' do
 	content_type :json, :charset => 'utf-8'
-	User.find(params[:id]).to_json(:except => :password)
-end 
+	raw = request.env["rack.input"].read
+	json = JSON.parse(raw,:symbolize_names => true) 
+	user = User.where({email: json[:email], password: json[:password]}).first
+	if user
+		user.to_json
+	else
+		response = {} 
+		response[:status] = 'failed'
+		response[:message] = 'Email or password incorrect.'
+		response.to_json
+	end
+end
 
 post '/users' do
 	content_type :json, :charset => 'utf-8'
